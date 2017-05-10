@@ -26,6 +26,7 @@ import com.vuforia.samples.SampleApplication.SampleAppRendererControl;
 import com.vuforia.samples.SampleApplication.SampleApplicationSession;
 import com.vuforia.samples.SampleApplication.utils.CubeShaders;
 import com.vuforia.samples.SampleApplication.utils.LoadingDialogHandler;
+import com.vuforia.samples.SampleApplication.utils.MeshObject;
 import com.vuforia.samples.SampleApplication.utils.SampleApplication3DModel;
 import com.vuforia.samples.SampleApplication.utils.SampleUtils;
 import com.vuforia.samples.SampleApplication.utils.Teapot;
@@ -53,7 +54,8 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
     private int mvpMatrixHandle;
     private int texSampler2DHandle;
 
-    private Teapot mTeapot;
+    private MeshObject mTeapot;
+    private Generate3DModel generate3DModel;
 
     private float kBuildingScale = 0.012f;
     private SampleApplication3DModel mBuildingsModel;
@@ -64,18 +66,30 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
     private static final float OBJECT_SCALE_FLOAT = 0.003f;
 
     public ImageTargetRenderer(ImageTargets activity, SampleApplicationSession session) {
+        this(activity, session, new Generate3DModel() {
+            @Override
+            public MeshObject generate3DModel() {
+                return new Teapot();
+            }
+        });
+    }
+
+    public ImageTargetRenderer(ImageTargets activity, SampleApplicationSession session, Generate3DModel generate3DModel) {
         mActivity = activity;
         vuforiaAppSession = session;
         // SampleAppRenderer used to encapsulate the use of RenderingPrimitives setting
         // the device mode AR/VR and stereo mode
         mSampleAppRenderer = new SampleAppRenderer(this, mActivity, Device.MODE.MODE_AR, false, 0.01f, 5f);
+        Log.d("tan", "ImageTargetRenderer: " + mSampleAppRenderer);
+        this.generate3DModel = generate3DModel;
     }
 
     // Called to draw the current frame.
     @Override
     public void onDrawFrame(GL10 gl) {
-        if (!mIsActive)
+        if (!mIsActive) {
             return;
+        }
 
         // Call our function to render content from SampleAppRenderer class
         mSampleAppRenderer.render();
@@ -84,8 +98,9 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
     public void setActive(boolean active) {
         mIsActive = active;
 
-        if (mIsActive)
+        if (mIsActive) {
             mSampleAppRenderer.configureVideoBackground();
+        }
     }
 
     // Called when the surface is created or recreated.
@@ -131,21 +146,20 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
                     GLES20.GL_UNSIGNED_BYTE, t.mData);
         }
 
-        shaderProgramID = SampleUtils.createProgramFromShaderSrc(
-                CubeShaders.CUBE_MESH_VERTEX_SHADER,
-                CubeShaders.CUBE_MESH_FRAGMENT_SHADER);
+        shaderProgramID = SampleUtils.createProgramFromShaderSrc(CubeShaders.CUBE_MESH_VERTEX_SHADER, CubeShaders.CUBE_MESH_FRAGMENT_SHADER);
 
-        vertexHandle = GLES20.glGetAttribLocation(shaderProgramID,
-                "vertexPosition");
-        textureCoordHandle = GLES20.glGetAttribLocation(shaderProgramID,
-                "vertexTexCoord");
-        mvpMatrixHandle = GLES20.glGetUniformLocation(shaderProgramID,
-                "modelViewProjectionMatrix");
-        texSampler2DHandle = GLES20.glGetUniformLocation(shaderProgramID,
-                "texSampler2D");
+        vertexHandle = GLES20.glGetAttribLocation(shaderProgramID, "vertexPosition");
+        textureCoordHandle = GLES20.glGetAttribLocation(shaderProgramID, "vertexTexCoord");
+        mvpMatrixHandle = GLES20.glGetUniformLocation(shaderProgramID, "modelViewProjectionMatrix");
+        texSampler2DHandle = GLES20.glGetUniformLocation(shaderProgramID, "texSampler2D");
 
+        Log.d("tan", "initRendering: (generate3DModel != null):" + (generate3DModel != null) + " mModelIsLoaded:" + mModelIsLoaded);
         if (!mModelIsLoaded) {
-            mTeapot = new Teapot();
+            if (generate3DModel != null) {
+                mTeapot = generate3DModel.generate3DModel();
+            } else {
+                mTeapot = new Teapot();
+            }
 
             try {
                 mBuildingsModel = new SampleApplication3DModel();
@@ -157,8 +171,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
             }
 
             // Hide the Loading Dialog
-            mActivity.loadingDialogHandler
-                    .sendEmptyMessage(LoadingDialogHandler.HIDE_LOADING_DIALOG);
+            mActivity.loadingDialogHandler.sendEmptyMessage(LoadingDialogHandler.HIDE_LOADING_DIALOG);
         }
 
     }
@@ -277,7 +290,16 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
 
     public void setTextures(Vector<Texture> textures) {
         mTextures = textures;
+    }
 
+//    public void Update3DModel(Generate3DModel generate3DModel) {
+//        this.generate3DModel = generate3DModel;
+//        this.mModelIsLoaded = false;
+//        initRendering();
+//    }
+
+    public interface Generate3DModel {
+        MeshObject generate3DModel();
     }
 
 }

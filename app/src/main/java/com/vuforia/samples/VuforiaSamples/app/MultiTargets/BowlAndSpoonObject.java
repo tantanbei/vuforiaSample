@@ -9,14 +9,13 @@ countries.
 
 package com.vuforia.samples.VuforiaSamples.app.MultiTargets;
 
-import java.nio.Buffer;
 import com.vuforia.samples.SampleApplication.utils.MeshObject;
 
+import java.nio.Buffer;
 
-public class BowlAndSpoonObject extends MeshObject
-{
+public class BowlAndSpoonObject extends MeshObject {
     // Data for drawing the 3D plane as overlay
-    private static final double cubeVertices[] = { 6.738506, 5.517030,
+    private static final double cubeVertices[] = {6.738506, 5.517030,
             1.844433, 6.822275, 4.896831, 1.844433, 6.574783, 5.473191,
             1.620076, 2.106043, 4.276631, 1.844433, 2.022274, 4.896831,
             1.844433, 2.269766, 4.320470, 1.620076, 6.119089, 3.199532,
@@ -156,9 +155,9 @@ public class BowlAndSpoonObject extends MeshObject
             2.150102, 7.424907, 5.320870, 2.430408, 7.411092, 5.264973,
             2.449277, 7.784627, 5.321132, 2.749217, 7.784627, 5.321132,
             2.749217, 4.914281, 5.420332, 0.456341, 7.761144, 5.263398,
-            2.759766 };
-    
-    private static final double cubeNormals[] = { -0.760926, -0.241082,
+            2.759766};
+
+    private static final double cubeNormals[] = {-0.760926, -0.241082,
             0.602388, -0.797131, -0.035889, 0.602739, -0.769715, -0.207637,
             0.603677, 0.760926, 0.241082, 0.602388, 0.797131, 0.035889,
             0.602739, 0.769715, 0.207637, 0.603677, -0.588956, 0.538365,
@@ -298,9 +297,9 @@ public class BowlAndSpoonObject extends MeshObject
             0.712002, -0.596832, 0.385219, 0.703846, -0.605131, 0.382154,
             0.698408, -0.613122, 0.380492, 0.692321, -0.612256, -0.384015,
             0.691140, -0.384186, -0.003962, 0.923247, -0.613802, 0.376454,
-            0.693924 };
-    
-    private static final double cubeTexcoords[] = { 0.025115, 0.012339,
+            0.693924};
+
+    private static final double cubeTexcoords[] = {0.025115, 0.012339,
             0.004825, 0.012339, 0.025115, 0.053024, 0.268555, 0.012339,
             0.248265, 0.012339, 0.268555, 0.053024, 0.430834, 0.012339,
             0.410543, 0.012339, 0.430834, 0.053024, 0.430834, 0.411975,
@@ -393,9 +392,9 @@ public class BowlAndSpoonObject extends MeshObject
             0.830219, 0.502446, 0.830219, 0.038771, 0.889615, 0.502446,
             0.889615, 0.502446, 0.889615, 0.038771, 0.940226, 0.502445,
             0.940226, 0.038771, 0.974385, 0.502445, 0.974385, 0.502445,
-            0.524351, 0.961230, 0.974385, 0.038770 };
-    
-    private static final short cubeIndices[] = { 2, 1, 0, 5, 4, 3, 8, 7, 6, 11,
+            0.524351, 0.961230, 0.974385, 0.038770};
+
+    private static final short cubeIndices[] = {2, 1, 0, 5, 4, 3, 8, 7, 6, 11,
             10, 9, 14, 13, 12, 17, 16, 15, 15, 19, 18, 17, 18, 20, 17, 22, 21,
             12, 24, 23, 14, 23, 19, 25, 14, 15, 28, 27, 26, 27, 16, 21, 26, 21,
             29, 26, 31, 30, 25, 9, 13, 11, 25, 16, 32, 11, 27, 35, 34, 33, 33,
@@ -485,29 +484,24 @@ public class BowlAndSpoonObject extends MeshObject
             256, 262, 255, 257, 261, 230, 252, 257, 258, 259, 260, 257, 260,
             264, 261, 253, 256, 254, 249, 258, 256, 258, 230, 262, 229, 230,
             261, 261, 263, 229, 267, 271, 266, 229, 267, 265, 263, 269, 268,
-            269, 272, 270, 271, 227, 225, 272, 274, 273, 274, 278, 275 };
-    
+            269, 272, 270, 271, 227, 225, 272, 274, 273, 274, 278, 275};
+
     Buffer mVertBuff;
     Buffer mTexCoordBuff;
     Buffer mNormBuff;
     Buffer mIndBuff;
-    
-    
-    public BowlAndSpoonObject()
-    {
+
+    public BowlAndSpoonObject() {
         mVertBuff = fillBuffer(cubeVertices);
         mTexCoordBuff = fillBuffer(cubeTexcoords);
         mNormBuff = fillBuffer(cubeNormals);
         mIndBuff = fillBuffer(cubeIndices);
     }
-    
-    
+
     @Override
-    public Buffer getBuffer(BUFFER_TYPE bufferType)
-    {
+    public Buffer getBuffer(BUFFER_TYPE bufferType) {
         Buffer result = null;
-        switch (bufferType)
-        {
+        switch (bufferType) {
             case BUFFER_TYPE_VERTEX:
                 result = mVertBuff;
                 break;
@@ -524,18 +518,14 @@ public class BowlAndSpoonObject extends MeshObject
         }
         return result;
     }
-    
-    
+
     @Override
-    public int getNumObjectVertex()
-    {
+    public int getNumObjectVertex() {
         return cubeVertices.length / 3;
     }
-    
-    
+
     @Override
-    public int getNumObjectIndex()
-    {
+    public int getNumObjectIndex() {
         return cubeIndices.length;
     }
 }

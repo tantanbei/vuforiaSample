@@ -51,8 +51,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 // The renderer class for the ImageTargets sample.
-public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRendererControl
-{
+public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRendererControl {
     private static final String LOGTAG = "VuMarkRenderer";
 
     private SampleApplicationSession vuforiaAppSession;
@@ -80,8 +79,7 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
     private String currentVumarkIdOnCard;
 
     public VuMarkRenderer(VuMark activity,
-                          SampleApplicationSession session)
-    {
+                          SampleApplicationSession session) {
         mActivity = activity;
         vuforiaAppSession = session;
         t0 = -1.0;
@@ -92,11 +90,9 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         mSampleAppRenderer = new SampleAppRenderer(this, mActivity, Device.MODE.MODE_AR, false, .01f, 100f);
     }
 
-
     // Called to draw the current frame.
     @Override
-    public void onDrawFrame(GL10 gl)
-    {
+    public void onDrawFrame(GL10 gl) {
         if (!mIsActive)
             return;
 
@@ -104,11 +100,9 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         mSampleAppRenderer.render();
     }
 
-
     // Called when the surface is created or recreated.
     @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config)
-    {
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.d(LOGTAG, "GLRenderer.onSurfaceCreated");
 
         // Call Vuforia function to (re)initialize rendering after first use
@@ -118,11 +112,9 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         mSampleAppRenderer.onSurfaceCreated();
     }
 
-
     // Called when the surface changed size.
     @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height)
-    {
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
         Log.d(LOGTAG, "GLRenderer.onSurfaceChanged");
 
         // Call Vuforia function to handle render surface size changes:
@@ -135,35 +127,30 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         initRendering();
     }
 
-
-    public void setActive(boolean active)
-    {
+    public void setActive(boolean active) {
         mIsActive = active;
 
-        if(mIsActive)
+        if (mIsActive)
             mSampleAppRenderer.configureVideoBackground();
     }
 
-
     // Function for initializing the renderer.
-    private void initRendering()
-    {
+    private void initRendering() {
         mRenderer = Renderer.getInstance();
 
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, Vuforia.requiresAlpha() ? 0.0f
                 : 1.0f);
 
-        for (Texture t : mTextures)
-        {
+        for (Texture t : mTextures) {
             GLES20.glGenTextures(1, t.mTextureID, 0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, t.mTextureID[0]);
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+                    GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
             GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                    GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA,
-                t.mWidth, t.mHeight, 0, GLES20.GL_RGBA,
-                GLES20.GL_UNSIGNED_BYTE, t.mData);
+                    t.mWidth, t.mHeight, 0, GLES20.GL_RGBA,
+                    GLES20.GL_UNSIGNED_BYTE, t.mData);
         }
 
         shaderProgramID = SampleUtils.createProgramFromShaderSrc(
@@ -173,52 +160,45 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         vertexHandle = GLES20.glGetAttribLocation(shaderProgramID,
                 "vertexPosition");
         textureCoordHandle = GLES20.glGetAttribLocation(shaderProgramID,
-            "vertexTexCoord");
+                "vertexTexCoord");
         mvpMatrixHandle = GLES20.glGetUniformLocation(shaderProgramID,
                 "modelViewProjectionMatrix");
         texSampler2DHandle = GLES20.glGetUniformLocation(shaderProgramID,
-            "texSampler2D");
+                "texSampler2D");
         calphaHandle = GLES20.glGetUniformLocation(shaderProgramID,
                 "calpha");
 
         // Hide the Loading Dialog
         mActivity.loadingDialogHandler
-            .sendEmptyMessage(LoadingDialogHandler.HIDE_LOADING_DIALOG);
+                .sendEmptyMessage(LoadingDialogHandler.HIDE_LOADING_DIALOG);
 
     }
 
-    private float blinkVumark(boolean reset)
-    {
-        if (reset || t0 < 0.0f)
-        {
+    private float blinkVumark(boolean reset) {
+        if (reset || t0 < 0.0f) {
             t0 = System.currentTimeMillis();
         }
-        if (reset) 
-        {
+        if (reset) {
             return 0.0f;
         }
         double time = System.currentTimeMillis();
-        double delta = (time-t0);
+        double delta = (time - t0);
 
-        if (delta > 1000.0f)
-        {
+        if (delta > 1000.0f) {
             return 1.0f;
         }
 
-        if ((delta < 300.0f) || ((delta > 500.0f) && (delta < 800.0f)))
-        {
+        if ((delta < 300.0f) || ((delta > 500.0f) && (delta < 800.0f))) {
             return 1.0f;
         }
 
         return 0.0f;
     }
 
-
     // The render function called from SampleAppRendering by using RenderingPrimitives views.
     // The state is owned by SampleAppRenderer which is controlling it's lifecycle.
     // State should not be cached outside this method.
-    public void renderFrame(State state, float[] projectionMatrix)
-    {
+    public void renderFrame(State state, float[] projectionMatrix) {
         // Renders video background replacing Renderer.DrawVideoBackground()
         mSampleAppRenderer.renderVideoBackground();
 
@@ -237,24 +217,20 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         Bitmap markerBitmap = null;
         int indexVuMarkToDisplay = -1;
 
-        if (state.getNumTrackableResults() > 1)
-        {
+        if (state.getNumTrackableResults() > 1) {
             float minimumDistance = Float.MAX_VALUE;
             CameraCalibration cameraCalibration = CameraDevice.getInstance().getCameraCalibration();
             Vec2F screenSize = cameraCalibration.getSize();
             Vec2F screenCenter = new Vec2F(screenSize.getData()[0] / 2.0f, screenSize.getData()[1] / 2.0f);
 
-            for (int tIdx = 0; tIdx < state.getNumTrackableResults(); tIdx++)
-            {
+            for (int tIdx = 0; tIdx < state.getNumTrackableResults(); tIdx++) {
                 TrackableResult result = state.getTrackableResult(tIdx);
-                if (result.isOfType(VuMarkTargetResult.getClassType()))
-                {
+                if (result.isOfType(VuMarkTargetResult.getClassType())) {
                     Vec3F point = new Vec3F(0, 0, 0);
                     Vec2F projection = Tool.projectPoint(cameraCalibration, result.getPose(), point);
 
                     float distance = distanceSquared(projection, screenCenter);
-                    if (distance < minimumDistance)
-                    {
+                    if (distance < minimumDistance) {
                         minimumDistance = distance;
                         indexVuMarkToDisplay = tIdx;
                     }
@@ -264,19 +240,17 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         }
 
         // Did we find any trackables this frame?
-        for (int tIdx = 0; tIdx < state.getNumTrackableResults(); tIdx++)
-        {
+        for (int tIdx = 0; tIdx < state.getNumTrackableResults(); tIdx++) {
             TrackableResult result = state.getTrackableResult(tIdx);
             Trackable trackable = result.getTrackable();
             Matrix44F modelViewMatrix_Vuforia = Tool
-                .convertPose2GLMatrix(result.getPose());
+                    .convertPose2GLMatrix(result.getPose());
             float[] modelViewMatrix = modelViewMatrix_Vuforia.getData();
 
-            if (result.isOfType(VuMarkTargetResult.getClassType()))
-            {
+            if (result.isOfType(VuMarkTargetResult.getClassType())) {
                 VuMarkTargetResult vmtResult = (VuMarkTargetResult) result;
                 VuMarkTarget vmTgt = (VuMarkTarget) vmtResult.getTrackable();
-                
+
                 VuMarkTemplate vmTmp = (VuMarkTemplate) vmTgt.getTemplate();
                 // user data contains the the SVG layer corresponding to the contour
                 // of the VuMark template
@@ -284,10 +258,9 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
                 // render an OpenGL object on top of the contour.
                 String userData = vmTmp.getVuMarkUserData();
 
-
                 InstanceId instanceId = vmTgt.getInstanceId();
                 boolean isMainVuMark = ((indexVuMarkToDisplay < 0) ||
-                                        (indexVuMarkToDisplay == tIdx));
+                        (indexVuMarkToDisplay == tIdx));
                 gotVuMark = true;
 
                 if (isMainVuMark) {
@@ -296,8 +269,7 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
                     Image instanceImage = vmTgt.getInstanceImage();
                     markerBitmap = getBitMapFromImage(instanceImage);
 
-                    if (! markerValue.equalsIgnoreCase(currentVumarkIdOnCard))
-                    {
+                    if (!markerValue.equalsIgnoreCase(currentVumarkIdOnCard)) {
                         mActivity.hideCard();
                         blinkVumark(true);
                     }
@@ -306,7 +278,7 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
 
                 // deal with the modelview and projection matrices
                 float[] modelViewProjection = new float[16];
-				
+
                 // Add a translation to recenter the augmentation
                 // on the VuMark center, w.r.t. the origin
                 Vec2F origin = vmTmp.getOrigin();
@@ -357,15 +329,12 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
 
         }
 
-        if(gotVuMark)
-        {
+        if (gotVuMark) {
             // If we have a detection, let's make sure
             // the card is visible
             mActivity.showCard(markerType, markerValue, markerBitmap);
             currentVumarkIdOnCard = markerValue;
-        }
-        else
-        {
+        } else {
             // We reset the state of the animation so that
             // it triggers next time a vumark is detected
             blinkVumark(true);
@@ -379,27 +348,23 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         mRenderer.end();
     }
 
-    private float distanceSquared(Vec2F p1, Vec2F p2)
-    {
+    private float distanceSquared(Vec2F p1, Vec2F p2) {
         return (float) (Math.pow(p1.getData()[0] - p2.getData()[0], 2.0) +
-                        Math.pow(p1.getData()[1] - p2.getData()[1], 2.0));
+                Math.pow(p1.getData()[1] - p2.getData()[1], 2.0));
     }
 
-    public void setTextures(Vector<Texture> textures)
-    {
+    public void setTextures(Vector<Texture> textures) {
         mTextures = textures;
     }
 
-    private String instanceIdToType(InstanceId instanceId)
-    {
-        switch(instanceId.getDataType())
-        {
+    private String instanceIdToType(InstanceId instanceId) {
+        switch (instanceId.getDataType()) {
             case InstanceId.ID_DATA_TYPE.STRING:
                 return "String";
-            
+
             case InstanceId.ID_DATA_TYPE.BYTES:
                 return "Bytes";
-            
+
             case InstanceId.ID_DATA_TYPE.NUMERIC:
                 return "Numeric";
         }
@@ -409,22 +374,19 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
 
     static final String hexTable = "0123456789abcdef";
 
-    private String instanceIdToValue(InstanceId instanceId)
-    {
+    private String instanceIdToValue(InstanceId instanceId) {
         ByteBuffer instanceIdBuffer = instanceId.getBuffer();
         byte[] instanceIdBytes = new byte[instanceIdBuffer.remaining()];
         instanceIdBuffer.get(instanceIdBytes);
 
         String instanceIdStr = "";
-        switch(instanceId.getDataType())
-        {
+        switch (instanceId.getDataType()) {
             case InstanceId.ID_DATA_TYPE.STRING:
                 instanceIdStr = new String(instanceIdBytes, Charset.forName("US-ASCII"));
                 break;
 
             case InstanceId.ID_DATA_TYPE.BYTES:
-                for (int i = instanceIdBytes.length - 1; i >= 0; i--)
-                {
+                for (int i = instanceIdBytes.length - 1; i >= 0; i--) {
                     byte byteValue = instanceIdBytes[i];
                     instanceIdStr += hexTable.charAt((byteValue & 0xf0) >> 4);
                     instanceIdStr += hexTable.charAt(byteValue & 0x0f);
@@ -444,8 +406,7 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         return instanceIdStr;
     }
 
-    private Bitmap getBitMapFromImage(Image image)
-    {
+    private Bitmap getBitMapFromImage(Image image) {
         // we handle only RGB888 in this example
         if (image.getFormat() != PIXEL_FORMAT.RGBA8888) {
             // the default 'stock' image will be used for the instance image
@@ -459,13 +420,12 @@ public class VuMarkRenderer implements GLSurfaceView.Renderer, SampleAppRenderer
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
         int[] colors = new int[width * height];
-        int r,g,b,a;
-        for (int ci = 0; ci < colors.length; ci++)
-        {
-            r = (0xFF & imgData[4*ci]);
-            g = (0xFF & imgData[4*ci+1]);
-            b = (0xFF & imgData[4*ci+2]);
-            a = (0xFF & imgData[4*ci+3]);
+        int r, g, b, a;
+        for (int ci = 0; ci < colors.length; ci++) {
+            r = (0xFF & imgData[4 * ci]);
+            g = (0xFF & imgData[4 * ci + 1]);
+            b = (0xFF & imgData[4 * ci + 2]);
+            a = (0xFF & imgData[4 * ci + 3]);
             colors[ci] = Color.argb(a, r, g, b);
         }
 

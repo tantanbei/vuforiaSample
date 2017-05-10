@@ -640,21 +640,17 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
 
                     if (!mExtendedTracking) {
                         if (!trackable.startExtendedTracking()) {
-                            Log.e(LOGTAG,
-                                    "Failed to start extended tracking target");
+                            Log.e(LOGTAG, "Failed to start extended tracking target");
                             result = false;
                         } else {
-                            Log.d(LOGTAG,
-                                    "Successfully started extended tracking target");
+                            Log.d(LOGTAG, "Successfully started extended tracking target");
                         }
                     } else {
                         if (!trackable.stopExtendedTracking()) {
-                            Log.e(LOGTAG,
-                                    "Failed to stop extended tracking target");
+                            Log.e(LOGTAG, "Failed to stop extended tracking target");
                             result = false;
                         } else {
-                            Log.d(LOGTAG,
-                                    "Successfully started extended tracking target");
+                            Log.d(LOGTAG, "Successfully started extended tracking target");
                         }
                     }
                 }
@@ -666,12 +662,27 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
                 break;
 
             default:
-                if (command >= mStartDatasetsIndex
-                        && command < mStartDatasetsIndex + mDatasetsNumber) {
+                if (command >= mStartDatasetsIndex && command < mStartDatasetsIndex + mDatasetsNumber) {
                     mSwitchDatasetAsap = true;
-                    mCurrentDatasetSelectionIndex = command
-                            - mStartDatasetsIndex;
+                    mCurrentDatasetSelectionIndex = command - mStartDatasetsIndex;
                 }
+
+//                mRenderer = new ImageTargetRenderer(this, vuforiaAppSession, new ImageTargetRenderer.Generate3DModel() {
+//                    @Override
+//                    public MeshObject generate3DModel() {
+//                        return new CubeObject();
+//                    }
+//                });
+//
+//                mRenderer.setTextures(mTextures);
+//                mGlView.setRenderer(mRenderer);
+//                Log.d("tan", "menuProcess: Update3DModel");
+//                mRenderer.Update3DModel(new ImageTargetRenderer.Generate3DModel() {
+//                    @Override
+//                    public MeshObject generate3DModel() {
+//                        return new CubeObject();
+//                    }
+//                });
                 break;
         }
 

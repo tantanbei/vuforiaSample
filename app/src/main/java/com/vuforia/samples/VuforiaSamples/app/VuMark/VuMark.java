@@ -57,34 +57,32 @@ import com.vuforia.samples.VuforiaSamples.ui.SampleAppMenu.SampleAppMenuInterfac
 
 import java.util.Vector;
 
-
 public class VuMark extends Activity implements SampleApplicationControl,
-        SampleAppMenuInterface
-{
+        SampleAppMenuInterface {
     private static final String LOGTAG = "VuMark";
-    
+
     SampleApplicationSession vuforiaAppSession;
-    
+
     private DataSet mCurrentDataset;
 
     // Our OpenGL view:
     private SampleApplicationGLView mGlView;
-    
+
     // Our renderer:
     private VuMarkRenderer mRenderer;
-    
+
     private GestureDetector mGestureDetector;
-    
+
     // The textures we will use for rendering:
     private Vector<Texture> mTextures;
-    
+
     private boolean mContAutofocus = false;
     private boolean mExtendedTracking = false;
 
     private RelativeLayout mUILayout;
-    
+
     private SampleAppMenu mSampleAppMenu;
-    
+
     LoadingDialogHandler loadingDialogHandler = new LoadingDialogHandler(this);
 
     private View _viewCard;
@@ -94,33 +92,31 @@ public class VuMark extends Activity implements SampleApplicationControl,
 
     // Alert Dialog used to display SDK errors
     private AlertDialog mErrorDialog;
-    
+
     boolean mIsDroidDevice = false;
-    
-    
+
     // Called when the activity first starts or the user navigates back to an
     // activity.
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         Log.d(LOGTAG, "onCreate");
         super.onCreate(savedInstanceState);
-        
+
         vuforiaAppSession = new SampleApplicationSession(this);
-        
+
         startLoadingAnimation();
 
         vuforiaAppSession
-            .initAR(this, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        
+                .initAR(this, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         mGestureDetector = new GestureDetector(this, new GestureListener());
-        
+
         // Load any sample specific textures:
         mTextures = new Vector<Texture>();
         loadTextures();
-        
+
         mIsDroidDevice = Build.MODEL.toLowerCase().startsWith(
-            "droid");
+                "droid");
 
         LayoutParams layoutParamsControl = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         LayoutInflater inflater = getLayoutInflater();
@@ -143,180 +139,150 @@ public class VuMark extends Activity implements SampleApplicationControl,
         _textValue = (TextView) _viewCard.findViewById(R.id.text_value);
         _instanceImageView = (ImageView) _viewCard.findViewById(R.id.instance_image);
     }
-    
+
     // Process Single Tap event to trigger autofocus
     private class GestureListener extends
-        GestureDetector.SimpleOnGestureListener
-    {
+            GestureDetector.SimpleOnGestureListener {
         // Used to set autofocus one second after a manual focus is triggered
         private final Handler autofocusHandler = new Handler();
-        
-        
+
         @Override
-        public boolean onDown(MotionEvent e)
-        {
+        public boolean onDown(MotionEvent e) {
             return true;
         }
-        
-        
+
         @Override
-        public boolean onSingleTapUp(MotionEvent e)
-        {
+        public boolean onSingleTapUp(MotionEvent e) {
             // Generates a Handler to trigger autofocus
             // after 1 second
-            autofocusHandler.postDelayed(new Runnable()
-            {
-                public void run()
-                {
+            autofocusHandler.postDelayed(new Runnable() {
+                public void run() {
                     boolean result = CameraDevice.getInstance().setFocusMode(
-                        CameraDevice.FOCUS_MODE.FOCUS_MODE_TRIGGERAUTO);
-                    
+                            CameraDevice.FOCUS_MODE.FOCUS_MODE_TRIGGERAUTO);
+
                     if (!result)
                         Log.e("SingleTapUp", "Unable to trigger focus");
                 }
             }, 1000L);
-            
+
             return true;
         }
     }
-    
-    
+
     // We want to load specific textures from the APK, which we will later use
     // for rendering.
-    
-    private void loadTextures()
-    {
+
+    private void loadTextures() {
         mTextures.add(Texture.loadTextureFromApk("vumark_texture.png",
                 getAssets()));
     }
-    
-    
+
     // Called when the activity will start interacting with the user.
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         Log.d(LOGTAG, "onResume");
         super.onResume();
-        
+
         // This is needed for some Droid devices to force portrait
-        if (mIsDroidDevice)
-        {
+        if (mIsDroidDevice) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        
-        try
-        {
+
+        try {
             vuforiaAppSession.resumeAR();
-        } catch (SampleApplicationException e)
-        {
+        } catch (SampleApplicationException e) {
             Log.e(LOGTAG, e.getString());
         }
-        
+
         // Resume the GL view:
-        if (mGlView != null)
-        {
+        if (mGlView != null) {
             mGlView.setVisibility(View.VISIBLE);
             mGlView.onResume();
         }
     }
-    
-    
+
     // Callback for configuration changes the activity handles itself
     @Override
-    public void onConfigurationChanged(Configuration config)
-    {
+    public void onConfigurationChanged(Configuration config) {
         Log.d(LOGTAG, "onConfigurationChanged");
         super.onConfigurationChanged(config);
-        
+
         vuforiaAppSession.onConfigurationChanged();
     }
-    
-    
+
     // Called when the system is about to start resuming a previous activity.
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         Log.d(LOGTAG, "onPause");
         super.onPause();
-        
-        if (mGlView != null)
-        {
+
+        if (mGlView != null) {
             mGlView.setVisibility(View.INVISIBLE);
             mGlView.onPause();
         }
 
-        try
-        {
+        try {
             vuforiaAppSession.pauseAR();
-        } catch (SampleApplicationException e)
-        {
+        } catch (SampleApplicationException e) {
             Log.e(LOGTAG, e.getString());
         }
     }
-    
-    
+
     // The final call you receive before your activity is destroyed.
     @Override
-    protected void onDestroy()
-    {
+    protected void onDestroy() {
         Log.d(LOGTAG, "onDestroy");
         super.onDestroy();
-        
-        try
-        {
+
+        try {
             vuforiaAppSession.stopAR();
-        } catch (SampleApplicationException e)
-        {
+        } catch (SampleApplicationException e) {
             Log.e(LOGTAG, e.getString());
         }
-        
+
         // Unload texture:
         mTextures.clear();
         mTextures = null;
-        
+
         System.gc();
     }
-    
-    
+
     // Initializes AR application components.
-    private void initApplicationAR()
-    {
+    private void initApplicationAR() {
         // Create OpenGL ES view:
         int depthSize = 16;
         int stencilSize = 0;
         boolean translucent = Vuforia.requiresAlpha();
-        
+
         mGlView = new SampleApplicationGLView(this);
         mGlView.init(translucent, depthSize, stencilSize);
-        
+
         mRenderer = new VuMarkRenderer(this, vuforiaAppSession);
         mRenderer.setTextures(mTextures);
         mGlView.setRenderer(mRenderer);
-        
+
     }
-    
-    
-    private void startLoadingAnimation()
-    {
+
+    private void startLoadingAnimation() {
         mUILayout = (RelativeLayout) View.inflate(this, R.layout.camera_overlay_reticle,
-            null);
-        
+                null);
+
         mUILayout.setVisibility(View.VISIBLE);
         mUILayout.setBackgroundColor(Color.BLACK);
-        
+
         // Gets a reference to the loading dialog
         loadingDialogHandler.mLoadingDialogContainer = mUILayout
-            .findViewById(R.id.loading_indicator);
-        
+                .findViewById(R.id.loading_indicator);
+
         // Shows the loading indicator at start
         loadingDialogHandler
-            .sendEmptyMessage(LoadingDialogHandler.SHOW_LOADING_DIALOG);
-        
+                .sendEmptyMessage(LoadingDialogHandler.SHOW_LOADING_DIALOG);
+
         // Adds the inflated layout to the view
         addContentView(mUILayout, new LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT));
-        
+
     }
 
     void showCard(final String type, final String value, final Bitmap bitmap) {
@@ -349,86 +315,77 @@ public class VuMark extends Activity implements SampleApplicationControl,
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-            // if card not visible, do nothing
-            if (_viewCard.getVisibility() != View.VISIBLE) {
-                return;
-            }
-            _textType.setText("");
-            _textValue.setText("");
-            Animation bottomDown = AnimationUtils.loadAnimation(context,
-                    R.anim.bottom_down);
+                // if card not visible, do nothing
+                if (_viewCard.getVisibility() != View.VISIBLE) {
+                    return;
+                }
+                _textType.setText("");
+                _textValue.setText("");
+                Animation bottomDown = AnimationUtils.loadAnimation(context,
+                        R.anim.bottom_down);
 
-            _viewCard.startAnimation(bottomDown);
-            _viewCard.setVisibility(View.INVISIBLE);
-            // mUILayout.invalidate();
+                _viewCard.startAnimation(bottomDown);
+                _viewCard.setVisibility(View.INVISIBLE);
+                // mUILayout.invalidate();
             }
         });
     }
 
     // Methods to load and destroy tracking data.
     @Override
-    public boolean doLoadTrackersData()
-    {
+    public boolean doLoadTrackersData() {
         TrackerManager tManager = TrackerManager.getInstance();
         ObjectTracker objectTracker = (ObjectTracker) tManager
-            .getTracker(ObjectTracker.getClassType());
+                .getTracker(ObjectTracker.getClassType());
         if (objectTracker == null)
             return false;
-        
+
         if (mCurrentDataset == null)
             mCurrentDataset = objectTracker.createDataSet();
-        
+
         if (mCurrentDataset == null)
             return false;
-        
+
         if (!mCurrentDataset.load(
                 "Vuforia.xml",
-            STORAGE_TYPE.STORAGE_APPRESOURCE))
+                STORAGE_TYPE.STORAGE_APPRESOURCE))
             return false;
-        
+
         if (!objectTracker.activateDataSet(mCurrentDataset))
             return false;
-        
+
         return true;
     }
-    
-    
+
     @Override
-    public boolean doUnloadTrackersData()
-    {
+    public boolean doUnloadTrackersData() {
         // Indicate if the trackers were unloaded correctly
         boolean result = true;
-        
+
         TrackerManager tManager = TrackerManager.getInstance();
         ObjectTracker objectTracker = (ObjectTracker) tManager
-            .getTracker(ObjectTracker.getClassType());
+                .getTracker(ObjectTracker.getClassType());
         if (objectTracker == null)
             return false;
-        
-        if (mCurrentDataset != null && mCurrentDataset.isActive())
-        {
+
+        if (mCurrentDataset != null && mCurrentDataset.isActive()) {
             if (objectTracker.getActiveDataSet(0).equals(mCurrentDataset)
-                && !objectTracker.deactivateDataSet(mCurrentDataset))
-            {
+                    && !objectTracker.deactivateDataSet(mCurrentDataset)) {
                 result = false;
-            } else if (!objectTracker.destroyDataSet(mCurrentDataset))
-            {
+            } else if (!objectTracker.destroyDataSet(mCurrentDataset)) {
                 result = false;
             }
-            
+
             mCurrentDataset = null;
         }
-        
+
         return result;
     }
-    
-    
+
     @Override
-    public void onInitARDone(SampleApplicationException exception)
-    {
-        
-        if (exception == null)
-        {
+    public void onInitARDone(SampleApplicationException exception) {
+
+        if (exception == null) {
             initApplicationAR();
 
             mRenderer.setActive(true);
@@ -438,242 +395,205 @@ public class VuMark extends Activity implements SampleApplicationControl,
             // BEFORE the camera is started and video
             // background is configured.
             addContentView(mGlView, new LayoutParams(LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT));
-            
+                    LayoutParams.MATCH_PARENT));
+
             // Sets the UILayout to be drawn in front of the camera
             mUILayout.bringToFront();
-            
+
             // Sets the layout background to transparent
             mUILayout.setBackgroundColor(Color.TRANSPARENT);
-            
-            try
-            {
+
+            try {
                 vuforiaAppSession.startAR(CameraDevice.CAMERA_DIRECTION.CAMERA_DIRECTION_DEFAULT);
-            } catch (SampleApplicationException e)
-            {
+            } catch (SampleApplicationException e) {
                 Log.e(LOGTAG, e.getString());
             }
-            
+
             boolean result = CameraDevice.getInstance().setFocusMode(
-                CameraDevice.FOCUS_MODE.FOCUS_MODE_CONTINUOUSAUTO);
-            
+                    CameraDevice.FOCUS_MODE.FOCUS_MODE_CONTINUOUSAUTO);
+
             if (result)
                 mContAutofocus = true;
             else
                 Log.e(LOGTAG, "Unable to enable continuous autofocus");
-            
+
             mSampleAppMenu = new SampleAppMenu(this, this, "VuMark",
-                mGlView, mUILayout, null);
+                    mGlView, mUILayout, null);
             setSampleAppMenuSettings();
-            
-        } else
-        {
+
+        } else {
             Log.e(LOGTAG, exception.getString());
             showInitializationErrorMessage(exception.getString());
         }
     }
-    
-    
+
     // Shows initialization error messages as System dialogs
-    public void showInitializationErrorMessage(String message)
-    {
+    public void showInitializationErrorMessage(String message) {
         final String errorMessage = message;
-        runOnUiThread(new Runnable()
-        {
-            public void run()
-            {
-                if (mErrorDialog != null)
-                {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                if (mErrorDialog != null) {
                     mErrorDialog.dismiss();
                 }
-                
+
                 // Generates an Alert Dialog to show the error message
                 AlertDialog.Builder builder = new AlertDialog.Builder(
-                    VuMark.this);
+                        VuMark.this);
                 builder
-                    .setMessage(errorMessage)
-                    .setTitle(getString(R.string.INIT_ERROR))
-                    .setCancelable(false)
-                    .setIcon(0)
-                    .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener()
-                        {
-                            public void onClick(DialogInterface dialog, int id)
-                            {
-                                finish();
-                            }
-                        });
-                
+                        .setMessage(errorMessage)
+                        .setTitle(getString(R.string.INIT_ERROR))
+                        .setCancelable(false)
+                        .setIcon(0)
+                        .setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        finish();
+                                    }
+                                });
+
                 mErrorDialog = builder.create();
                 mErrorDialog.show();
             }
         });
     }
-    
-    
+
     @Override
-    public void onVuforiaUpdate(State state)
-    {
+    public void onVuforiaUpdate(State state) {
     }
-    
-    
+
     @Override
-    public boolean doInitTrackers()
-    {
+    public boolean doInitTrackers() {
         // Indicate if the trackers were initialized correctly
         boolean result = true;
-        
+
         TrackerManager tManager = TrackerManager.getInstance();
         Tracker tracker;
-        
+
         // Trying to initialize the image tracker
         tracker = tManager.initTracker(ObjectTracker.getClassType());
-        if (tracker == null)
-        {
+        if (tracker == null) {
             Log.e(
-                LOGTAG,
-                "Tracker not initialized. Tracker already initialized or the camera is already started");
+                    LOGTAG,
+                    "Tracker not initialized. Tracker already initialized or the camera is already started");
             result = false;
-        } else
-        {
+        } else {
             Log.i(LOGTAG, "Tracker successfully initialized");
         }
         Vuforia.setHint(HINT.HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS, 10);
         return result;
     }
-    
-    
+
     @Override
-    public boolean doStartTrackers()
-    {
+    public boolean doStartTrackers() {
         // Indicate if the trackers were started correctly
         boolean result = true;
-        
+
         Tracker objectTracker = TrackerManager.getInstance().getTracker(
-            ObjectTracker.getClassType());
+                ObjectTracker.getClassType());
         if (objectTracker != null)
             objectTracker.start();
-        
+
         return result;
     }
-    
-    
+
     @Override
-    public boolean doStopTrackers()
-    {
+    public boolean doStopTrackers() {
         // Indicate if the trackers were stopped correctly
         boolean result = true;
-        
+
         Tracker objectTracker = TrackerManager.getInstance().getTracker(
-            ObjectTracker.getClassType());
+                ObjectTracker.getClassType());
         if (objectTracker != null)
             objectTracker.stop();
-        
+
         return result;
     }
-    
-    
+
     @Override
-    public boolean doDeinitTrackers()
-    {
+    public boolean doDeinitTrackers() {
         // Indicate if the trackers were deinitialized correctly
         boolean result = true;
-        
+
         TrackerManager tManager = TrackerManager.getInstance();
         tManager.deinitTracker(ObjectTracker.getClassType());
-        
+
         return result;
     }
-    
-    
+
     @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
+    public boolean onTouchEvent(MotionEvent event) {
         // Process the Gestures
         if (mSampleAppMenu != null && mSampleAppMenu.processEvent(event))
             return true;
-        
+
         return mGestureDetector.onTouchEvent(event);
     }
-    
-    
-    boolean isExtendedTrackingActive()
-    {
+
+    boolean isExtendedTrackingActive() {
         return mExtendedTracking;
     }
-    
+
     final public static int CMD_BACK = -1;
     final public static int CMD_EXTENDED_TRACKING = 1;
 
     // This method sets the menu's settings
-    private void setSampleAppMenuSettings()
-    {
+    private void setSampleAppMenuSettings() {
         SampleAppMenuGroup group;
-        
+
         group = mSampleAppMenu.addGroup("", false);
         group.addTextItem(getString(R.string.menu_back), -1);
-        
+
         group = mSampleAppMenu.addGroup("", true);
         group.addSelectionItem(getString(R.string.menu_extended_tracking),
-            CMD_EXTENDED_TRACKING, false);
+                CMD_EXTENDED_TRACKING, false);
 
         mSampleAppMenu.attachMenu();
     }
-    
-    
+
     @Override
-    public boolean menuProcess(int command)
-    {
-        
+    public boolean menuProcess(int command) {
+
         boolean result = true;
-        
-        switch (command)
-        {
+
+        switch (command) {
             case CMD_BACK:
                 finish();
                 break;
 
             case CMD_EXTENDED_TRACKING:
-                for (int tIdx = 0; tIdx < mCurrentDataset.getNumTrackables(); tIdx++)
-                {
+                for (int tIdx = 0; tIdx < mCurrentDataset.getNumTrackables(); tIdx++) {
                     Trackable trackable = mCurrentDataset.getTrackable(tIdx);
-                    
-                    if (!mExtendedTracking)
-                    {
-                        if (!trackable.startExtendedTracking())
-                        {
+
+                    if (!mExtendedTracking) {
+                        if (!trackable.startExtendedTracking()) {
                             Log.e(LOGTAG,
-                                "Failed to start extended tracking target");
+                                    "Failed to start extended tracking target");
                             result = false;
-                        } else
-                        {
+                        } else {
                             Log.d(LOGTAG,
-                                "Successfully started extended tracking target");
+                                    "Successfully started extended tracking target");
                         }
-                    } else
-                    {
-                        if (!trackable.stopExtendedTracking())
-                        {
+                    } else {
+                        if (!trackable.stopExtendedTracking()) {
                             Log.e(LOGTAG,
-                                "Failed to stop extended tracking target");
+                                    "Failed to stop extended tracking target");
                             result = false;
-                        } else
-                        {
+                        } else {
                             Log.d(LOGTAG,
-                                "Successfully started extended tracking target");
+                                    "Successfully started extended tracking target");
                         }
                     }
                 }
-                
+
                 if (result)
                     mExtendedTracking = !mExtendedTracking;
-                
+
                 break;
-            
+
             default:
                 break;
         }
-        
+
         return result;
     }
 }
