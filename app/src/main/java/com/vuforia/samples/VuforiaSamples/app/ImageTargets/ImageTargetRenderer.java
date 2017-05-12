@@ -27,6 +27,7 @@ import com.vuforia.samples.SampleApplication.SampleApplicationSession;
 import com.vuforia.samples.SampleApplication.utils.CubeShaders;
 import com.vuforia.samples.SampleApplication.utils.LoadingDialogHandler;
 import com.vuforia.samples.SampleApplication.utils.MeshObject;
+import com.vuforia.samples.SampleApplication.utils.Plant;
 import com.vuforia.samples.SampleApplication.utils.SampleApplication3DModel;
 import com.vuforia.samples.SampleApplication.utils.SampleUtils;
 import com.vuforia.samples.SampleApplication.utils.Teapot;
@@ -158,7 +159,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
             if (generate3DModel != null) {
                 mTeapot = generate3DModel.generate3DModel();
             } else {
-                mTeapot = new Teapot();
+                mTeapot = new Plant(mActivity.getAssets());
             }
 
             try {
