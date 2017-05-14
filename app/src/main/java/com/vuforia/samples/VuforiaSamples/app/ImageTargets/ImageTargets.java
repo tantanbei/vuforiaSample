@@ -44,7 +44,10 @@ import com.vuforia.samples.SampleApplication.SampleApplicationControl;
 import com.vuforia.samples.SampleApplication.SampleApplicationException;
 import com.vuforia.samples.SampleApplication.SampleApplicationSession;
 import com.vuforia.samples.SampleApplication.utils.LoadingDialogHandler;
+import com.vuforia.samples.SampleApplication.utils.MeshObject;
+import com.vuforia.samples.SampleApplication.utils.Plant;
 import com.vuforia.samples.SampleApplication.utils.SampleApplicationGLView;
+import com.vuforia.samples.SampleApplication.utils.Teapot;
 import com.vuforia.samples.SampleApplication.utils.Texture;
 import com.vuforia.samples.VuforiaSamples.R;
 import com.vuforia.samples.VuforiaSamples.ui.SampleAppMenu.SampleAppMenu;
@@ -151,9 +154,9 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     // for rendering.
 
     private void loadTextures() {
-        mTextures.add(Texture.loadTextureFromApk("TextureTeapotBrass.png", getAssets()));
-        mTextures.add(Texture.loadTextureFromApk("TextureTeapotBlue.png", getAssets()));
-        mTextures.add(Texture.loadTextureFromApk("TextureTeapotRed.png", getAssets()));
+        mTextures.add(Texture.loadTextureFromApk("ImageTargets/leaf.jpg", getAssets()));
+//        mTextures.add(Texture.loadTextureFromApk("TextureTeapotBlue.png", getAssets()));
+//        mTextures.add(Texture.loadTextureFromApk("TextureTeapotRed.png", getAssets()));
         mTextures.add(Texture.loadTextureFromApk("ImageTargets/Buildings.jpeg", getAssets()));
     }
 
@@ -505,6 +508,7 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
     final public static int CMD_CAMERA_FRONT = 4;
     final public static int CMD_CAMERA_REAR = 5;
     final public static int CMD_DATASET_START_INDEX = 6;
+    final public static int CMD_MODEL = 7;
 
     // This method sets the menu's settings
     private void setSampleAppMenuSettings() {
@@ -516,6 +520,8 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
         group = mSampleAppMenu.addGroup("", true);
         group.addSelectionItem(getString(R.string.menu_extended_tracking),
                 CMD_EXTENDED_TRACKING, false);
+        group.addSelectionItem("茶壶/盆栽",
+                CMD_MODEL, false);
         group.addSelectionItem(getString(R.string.menu_contAutofocus),
                 CMD_AUTOFOCUS, mContAutofocus);
         mFlashOptionView = group.addSelectionItem(
@@ -573,6 +579,25 @@ public class ImageTargets extends Activity implements SampleApplicationControl,
                     Log.e(LOGTAG,
                             getString(mFlash ? R.string.menu_flash_error_off
                                     : R.string.menu_flash_error_on));
+                }
+                break;
+
+            case CMD_MODEL:
+                if (mRenderer.GetCurrentModel() instanceof Teapot) {
+                    mRenderer.Update3DModel(new ImageTargetRenderer.Generate3DModel() {
+                        @Override
+                        public MeshObject generate3DModel() {
+                            return new Plant(getResources().getAssets());
+                        }
+                    });
+                } else {
+                    mRenderer.Update3DModel(new ImageTargetRenderer.Generate3DModel() {
+                        @Override
+                        public MeshObject generate3DModel() {
+                            return new Teapot();
+
+                        }
+                    });
                 }
                 break;
 

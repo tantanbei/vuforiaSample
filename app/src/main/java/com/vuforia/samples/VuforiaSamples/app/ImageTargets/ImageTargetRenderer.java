@@ -159,7 +159,7 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
             if (generate3DModel != null) {
                 mTeapot = generate3DModel.generate3DModel();
             } else {
-                mTeapot = new Plant(mActivity.getAssets());
+                mTeapot = new Plant(mActivity.getResources().getAssets());
             }
 
             try {
@@ -228,6 +228,28 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
             GLES20.glUseProgram(shaderProgramID);
 
             if (!mActivity.isExtendedTrackingActive()) {
+                GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT, false, 0, mTeapot.getVertices());
+                GLES20.glVertexAttribPointer(textureCoordHandle, 2, GLES20.GL_FLOAT, false, 0, mTeapot.getTexCoords());
+
+                GLES20.glEnableVertexAttribArray(vertexHandle);
+                GLES20.glEnableVertexAttribArray(textureCoordHandle);
+
+                // activate texture 0, bind it, and pass to shader
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextures.get(textureIndex).mTextureID[0]);
+                GLES20.glUniform1i(texSampler2DHandle, 0);
+
+                // pass the model view matrix to the shader
+                GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, modelViewProjection, 0);
+
+                // finally draw the teapot
+                GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mTeapot.getNumObjectVertex());
+
+                // disable the enabled arrays
+                GLES20.glDisableVertexAttribArray(vertexHandle);
+                GLES20.glDisableVertexAttribArray(textureCoordHandle);
+            } else {
+                GLES20.glDisable(GLES20.GL_CULL_FACE);
                 GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT,
                         false, 0, mTeapot.getVertices());
                 GLES20.glVertexAttribPointer(textureCoordHandle, 2,
@@ -236,42 +258,13 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
                 GLES20.glEnableVertexAttribArray(vertexHandle);
                 GLES20.glEnableVertexAttribArray(textureCoordHandle);
 
-                // activate texture 0, bind it, and pass to shader
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
                 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,
-                        mTextures.get(textureIndex).mTextureID[0]);
-                GLES20.glUniform1i(texSampler2DHandle, 0);
-
-                // pass the model view matrix to the shader
-                GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false,
-                        modelViewProjection, 0);
-
-                // finally draw the teapot
-                GLES20.glDrawElements(GLES20.GL_TRIANGLES,
-                        mTeapot.getNumObjectIndex(), GLES20.GL_UNSIGNED_SHORT,
-                        mTeapot.getIndices());
-
-                // disable the enabled arrays
-                GLES20.glDisableVertexAttribArray(vertexHandle);
-                GLES20.glDisableVertexAttribArray(textureCoordHandle);
-            } else {
-                GLES20.glDisable(GLES20.GL_CULL_FACE);
-                GLES20.glVertexAttribPointer(vertexHandle, 3, GLES20.GL_FLOAT,
-                        false, 0, mBuildingsModel.getVertices());
-                GLES20.glVertexAttribPointer(textureCoordHandle, 2,
-                        GLES20.GL_FLOAT, false, 0, mBuildingsModel.getTexCoords());
-
-                GLES20.glEnableVertexAttribArray(vertexHandle);
-                GLES20.glEnableVertexAttribArray(textureCoordHandle);
-
-                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,
-                        mTextures.get(3).mTextureID[0]);
+                        mTextures.get(0).mTextureID[0]);
                 GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false,
                         modelViewProjection, 0);
                 GLES20.glUniform1i(texSampler2DHandle, 0);
-                GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0,
-                        mBuildingsModel.getNumObjectVertex());
+                GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mTeapot.getNumObjectVertex());
 
                 SampleUtils.checkGLError("Renderer DrawBuildings");
             }
@@ -293,14 +286,17 @@ public class ImageTargetRenderer implements GLSurfaceView.Renderer, SampleAppRen
         mTextures = textures;
     }
 
-//    public void Update3DModel(Generate3DModel generate3DModel) {
-//        this.generate3DModel = generate3DModel;
-//        this.mModelIsLoaded = false;
-//        initRendering();
-//    }
+    public void Update3DModel(Generate3DModel generate3DModel) {
+        this.generate3DModel = generate3DModel;
+        this.mTeapot = generate3DModel.generate3DModel();
+    }
 
     public interface Generate3DModel {
         MeshObject generate3DModel();
+    }
+
+    public MeshObject GetCurrentModel() {
+        return mTeapot;
     }
 
 }
